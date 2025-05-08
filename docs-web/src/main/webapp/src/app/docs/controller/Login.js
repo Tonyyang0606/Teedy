@@ -49,39 +49,46 @@ angular.module('docs').controller('Login', function(Restangular, $scope, $rootSc
     });
   };
 
-  // Password lost
-  $scope.openPasswordLost = function () {
+  // Register - 独立定义的注册函数
+  $scope.register = function() {
+    $uibModal.open({
+      templateUrl: 'partial/docs/register.html',
+      controller: 'ModalRegister'
+    }).result.then(function(user) {
+      if (user === null) {
+        return;
+      }
+      // 注册成功后的处理逻辑
+      var title = $translate.instant('login.register_submit_title');
+      var msg = $translate.instant('login.register_submit_message');
+      var btns = [{result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary'}];
+      $dialog.messageBox(title, msg, btns);
+      
+      // 可选：自动登录新注册的用户
+      // $scope.user = user;
+      // $scope.login();
+    });
+  };
+
+  // Password lost - 独立定义的密码找回函数
+  $scope.openPasswordLost = function() {
     $uibModal.open({
       templateUrl: 'partial/docs/passwordlost.html',
       controller: 'ModalPasswordLost'
-    }).result.then(function (username) {
+    }).result.then(function(username) {
       if (username === null) {
         return;
       }
-      // Open the register modal
-      $scope.register = function(){
-        $uibModal.open({
-          templateUrl: 'partial/docs/register.html',
-          controller: 'ModalRegister'
-        }).result.then(function (user) {
-          if(user === null){
-            return;
-          }
-          var title = $translate.instant('login.register_submit_title');
-          var msg = $translate.instant('login.register_submit_message');
-          var btns = [{result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary'}];
-          $dialog.messageBox(title, msg, btns);
-        });
-      };
-      // Send a password lost email
+      
+      // 发送密码重置邮件
       Restangular.one('user').post('password_lost', {
         username: username
-      }).then(function () {
+      }).then(function() {
         var title = $translate.instant('login.password_lost_sent_title');
         var msg = $translate.instant('login.password_lost_sent_message', { username: username });
         var btns = [{result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary'}];
         $dialog.messageBox(title, msg, btns);
-      }, function () {
+      }, function() {
         var title = $translate.instant('login.password_lost_error_title');
         var msg = $translate.instant('login.password_lost_error_message');
         var btns = [{result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary'}];
@@ -90,4 +97,3 @@ angular.module('docs').controller('Login', function(Restangular, $scope, $rootSc
     });
   };
 });
-

@@ -17,7 +17,10 @@
     "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置",
     "register": "注册",
     "register_submit_title": "注册申请已发送",
-    "register_submit_message": "您的注册申请已发送管理员处"
+    "register_submit_message": "您的注册申请已发送管理员处",
+    "title":"注册",
+    "storage_quota":"存储限额",
+    "storage_quota_placeholder":"存储限额 (in MB)"
   },
   "register": {
     "username": "用户名",
@@ -29,7 +32,10 @@
     "validation_code_title": "您的帐号已经激活了双身份验证. 请输入您配置手机app的提供的验证码.",
     "validation_code": "验证码",
     "register_failed_title": "注册失败",
-    "register_failed_message": "该用户名或邮箱已被占用"
+    "register_failed_message": "该用户名或邮箱已被占用",
+    "title": "新用户",
+    "storage_quota": "存储限额",
+    "storage_quota_placeholder": "存储限额 (in MB)"
   },
   "passwordlost": {
     "title": "丢失密码",

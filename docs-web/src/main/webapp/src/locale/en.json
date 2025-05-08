@@ -16,7 +16,10 @@
     "password_lost_error_title": "Password reset error",
     "password_lost_error_message": "Unable to send a password reset email, please contact your administrator for a manual reset",
     "register_submit_title": "Register application sent",
-    "register_submit_message": "The registration is now sent to your administrator"
+    "register_submit_message": "The registration is now sent to your administrator",
+    "title":"registration",
+    "storage_quota": "Storage quota",
+    "storage_quota_placeholder":"Storage quota (in MB)"
   },
   "passwordlost": {
     "title": "Password lost",
@@ -39,6 +42,17 @@
     "nav_settings": "Settings",
     "logout": "Logout",
     "global_quota_warning": "<strong>Warning!</strong> Global quota almost reached at {{ current | number: 0 }}MB ({{ percent | number: 1 }}%) used on {{ total | number: 0 }}MB"
+  },
+  "register": {
+    "title": "New Account",
+    "username": "Username",
+    "email": "E-mail",
+    "storage_quota": "Storage quota",
+    "storage_quota_placeholder": "Storage quota (in MB)",
+    "password": "Password",
+    "password_confirm": "Password (confirm)",
+    "submit": "Register"
+    
   },
   "document": {
     "navigation_up": "Go up one level",
