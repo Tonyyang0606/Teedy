@@ -258,6 +258,7 @@
   "settings": {
     "menu_personal_settings": "个人设置",
     "menu_user_account": "用户帐号",
+    "menu_register":"用户注册",
     "menu_two_factor_auth": "双重身份验证",
     "menu_opened_sessions": "已打开会话",
     "menu_general_settings": "一般设置",
@@ -273,6 +274,7 @@
       "add_user": "添加用户",
       "username": "用户名",
       "create_date": "创建日期",
+      "password":"密码",
       "totp_enabled": "为该帐号启用双身份认证",
       "edit": {
         "delete_user_title": "删除用户",
@@ -422,6 +424,16 @@
       "value": "值",
       "order": "顺序",
       "new_entry": "新输入"
+    },
+    "register": {
+      "title": "用户注册申请",
+      "username": "用户名",
+      "email": "邮箱",
+      "storage": "容量需求",
+      "submit_time": "提交时间",
+      "operation_title": "操作",
+      "operation_btn_approve": "同意",
+      "operation_btn_reject": "拒绝"
     }
   },
   "feedback": {

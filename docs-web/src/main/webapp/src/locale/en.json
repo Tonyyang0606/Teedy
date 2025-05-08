@@ -297,6 +297,7 @@
     "menu_ldap": "LDAP authentication",
     "menu_metadata": "Custom metadata",
     "menu_monitoring": "Monitoring",
+    "menu_register":"user registration",
     "ldap": {
       "title": "LDAP authentication",
       "enabled": "Enable LDAP authentication",
