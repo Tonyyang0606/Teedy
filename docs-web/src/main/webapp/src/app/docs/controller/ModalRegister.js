@@ -13,7 +13,7 @@ angular.module('docs').controller('ModalRegister', function ($scope, $uibModalIn
     // confirmPassword: ''
   };
   
-  $scope.close = function(user) {
-    $uibModalInstance.close(user);
-  };
+  $scope.close = function(registerUser) {
+    $uibModalInstance.close(registerUser);
+}
 });

@@ -17,7 +17,7 @@
     "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置",
     "register": "注册",
     "register_submit_title": "注册申请已发送",
-    "register_submit_message": "您的注册申请已发送管理员处",
+    "register_submit_message": "账号已被注册或管理员在审核中",
     "title":"注册",
     "storage_quota":"存储限额",
     "storage_quota_placeholder":"存储限额 (in MB)"
@@ -33,6 +33,11 @@
     "validation_code": "验证码",
     "register_failed_title": "注册失败",
     "register_failed_message": "该用户名或邮箱已被占用",
+    "operation_result success":"操作成功",
+    "operation_result error":"操作失败",
+    "status_approved":"已批准",
+    "status_rejected":"已拒绝",
+    "operation result title": "操作结果",
     "title": "新用户",
     "storage_quota": "存储限额",
     "storage_quota_placeholder": "存储限额 (in MB)"
@@ -433,7 +438,16 @@
       "submit_time": "提交时间",
       "operation_title": "操作",
       "operation_btn_approve": "同意",
-      "operation_btn_reject": "拒绝"
+      "operation_btn_reject": "拒绝",
+      "status": "状态",
+      "register_failed_title": "注册失败",
+      "register_failed_message": "该用户名或邮箱已被占用",
+      "operation_result_success":"操作成功",
+      "operation_result_error":"操作失败",
+      "status_approved":"已批准",
+      "status_rejected":"已拒绝",
+      "operation_result_title": "操作结果"
+
     }
   },
   "feedback": {
