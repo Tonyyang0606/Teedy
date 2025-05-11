@@ -55,7 +55,20 @@
     </div>
   </div>
   
-
+  <!-- Loading 提示 -->
+  <div ng-if="isLoading1" style="margin-top: 10px;">
+    <i class="fas fa-spinner fa-spin"></i> 正在分析中，请稍候...
+  </div>
+  
+  <!-- 显示分析结果 -->
+  <div class="panel panel-default" style="margin-top: 20px;" ng-if="!isLoading1 && llmOutput1">
+    <div class="panel-heading">
+      <strong>分析结果</strong>
+    </div>
+    <div class="panel-body">
+      <pre style="white-space: pre-wrap;">{{ llmOutput1 }}</pre>
+    </div>
+  </div>
 
 <div class="text-center" style="position: relative;" ng-if="$stateParams.fileId">
   <!-- Standard preview -->

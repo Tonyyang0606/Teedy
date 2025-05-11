@@ -86,9 +86,7 @@ angular.module('docs').controller('FileModalView', function ($uibModalInstance, 
   $scope.openFileContent = function () {
     window.open('../api/file/' + $stateParams.fileId + '/data?size=content');
   };
-  $scope.translate = function () {
-    window.open('../api/file/' + $stateParams.fileId + '/data?size=content');
-  };
+
   
 $scope.llmOutput = '';
 
@@ -113,7 +111,7 @@ $scope.extractFileContent = async function() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen2.5-VL-32B-Instruct',
+        model: 'THUDM/GLM-4-32B-0414',
         messages: [{
           role: 'user',
           content: `请分析以下内容并给出中文关键信息：\n\n${fileContent.substring(0, 115000)}，请你只生成文字内容，我不要markdown格式，`
@@ -159,6 +157,74 @@ $scope.extractFileContent = async function() {
   }
 };
 
+$scope.llmOutput1 = '';
+
+$scope.translate = async function() {
+  $scope.isLoading1 = true;
+  $scope.llmOutput1 = '';
+  $scope.$evalAsync(); 
+  
+  try {
+
+    const fileResponse = await fetch('../api/file/' + $stateParams.fileId + '/data?size=content');
+    if (!fileResponse.ok) {
+      throw new Error('无法获取文件内容: HTTP ' + fileResponse.status);
+    }
+    const fileContent = await fileResponse.text();
+
+
+    const llmOptions = {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer sk-wtehfqfabhdhcwuvqrmaqvvwkxotzsmlwnfgfeywbsdgbfoz', 
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'THUDM/GLM-4-32B-0414',
+        messages: [{
+          role: 'user',
+          content: `请翻译以下内容为中文：\n\n${fileContent.substring(0, 115000)}，请你只生成文字内容，我不要markdown格式，`
+        }],
+        stream: false,
+        max_tokens: 8192,  
+        temperature: 0.5   
+      })
+    };
+
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('请求超时')), 150000)); 
+    const llmResponse = await Promise.race([
+      fetch('https://api.siliconflow.cn/v1/chat/completions', llmOptions),
+      timeoutPromise
+    ]);
+    
+    if (!llmResponse.ok) {
+      throw new Error(`LLM接口错误: HTTP ${llmResponse.status}`);
+    }
+
+    const llmResult = await llmResponse.json();
+    
+
+    $scope.llmOutput1 = llmResult.choices?.[0]?.message?.content 
+      || '未获取到有效响应';
+    
+  } catch (err) {
+    console.error('处理失败:', err);
+    $scope.llmOutput1 = `错误: ${err.message || '未知错误'}`;
+    
+    // 特殊处理常见错误
+    if (err.message.includes('超时')) {
+      $scope.llmOutput1 = '请求超时，请稍后重试';
+    } else if (err.message.includes('401')) {
+      $scope.llmOutput1 = '认证失败，请检查API密钥';
+    }
+    
+  } finally {
+    $scope.isLoading1 = false;
+    $scope.$evalAsync(); // 确保最终状态更新
+  }
+};
   
 
   /**
