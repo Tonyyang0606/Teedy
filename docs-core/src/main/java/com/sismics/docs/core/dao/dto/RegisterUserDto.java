@@ -85,6 +85,6 @@ public class RegisterUserDto {
 
     @Override
     public String toString() {
-        return "RegisterUserDto [id=" + id + ", username=" + username + "]";
+        return "RegisterUserinformation [id=" + id + ", username=" + username + "]";
     }
 }

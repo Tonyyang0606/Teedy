@@ -8,127 +8,187 @@ import com.sismics.rest.exception.ServerException;
 import com.sismics.rest.util.ValidationUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.transaction.SystemException;
 import jakarta.ws.rs.*;
-import com.sismics.docs.core.constant.Constants;
-import com.sismics.docs.core.model.jpa.User;
 import jakarta.ws.rs.core.Response;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * REST resource for managing user registration requests.
+ */
 @Path("/registerUser")
-public class RegisterUserResource extends BaseResource{
+public class RegisterUserResource extends BaseResource {
+    private static final int USERNAME_MIN_LENGTH = 3;
+    private static final int USERNAME_MAX_LENGTH = 50;
+    private static final int PASSWORD_MIN_LENGTH = 8;
+    private static final int PASSWORD_MAX_LENGTH = 50;
+    private static final int EMAIL_MAX_LENGTH = 100;
+    private static final int INITIAL_STATUS = 0;
+
+    /**
+     * Registers a new user request.
+     */
     @PUT
     @Path("/register")
     public Response registerUser(
             @FormParam("username") String username,
             @FormParam("password") String password,
             @FormParam("email") String email,
-            @FormParam("storage") String storage
-    ){
-        // Validate the input data
-        username = ValidationUtil.validateLength(username, "username", 3, 50);
+            @FormParam("storage") String storage) {
+        
+        validateRegistrationInput(username, password, email, storage);
+        
+        RegisterUser registerUser = createRegistrationRequest(username, password, email, storage);
+        
+        try {
+            new RegisterUserDao().create(registerUser);
+        } catch (Exception e) {
+            handleRegistrationException(e);
+        }
+
+        return buildSuccessResponse();
+    }
+
+    /**
+     * Validates registration input parameters.
+     */
+    private void validateRegistrationInput(String username, String password, String email, String storage) {
+        username = ValidationUtil.validateLength(username, "username", USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH);
         ValidationUtil.validateUsername(username, "username");
-        password = ValidationUtil.validateLength(password, "password", 8, 50);
-        email = ValidationUtil.validateLength(email, "email", 1, 100);
+        password = ValidationUtil.validateLength(password, "password", PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+        email = ValidationUtil.validateLength(email, "email", 1, EMAIL_MAX_LENGTH);
         Long storageNum = ValidationUtil.validateLong(storage, "storage");
         ValidationUtil.validateEmail(email, "email");
+    }
 
-        //Instantiate Register User
+    /**
+     * Creates a registration request object.
+     */
+    private RegisterUser createRegistrationRequest(String username, String password, String email, String storage) {
         RegisterUser registerUser = new RegisterUser();
         registerUser.setUsername(username);
         registerUser.setPassword(password);
         registerUser.setEmail(email);
-        registerUser.setStorage(storageNum);
-        registerUser.setStatus(0);
-
-        // Put
-        RegisterUserDao dao = new RegisterUserDao();
-        try{
-            dao.create(registerUser);
-        } catch(Exception e) {
-            if("AlreadyRegisteringUsername".equals(e.getMessage())){
-                throw new ClientException("AlreadyRegisteringUsername","This username is under review", e);
-            }
-            else if("AlreadyExistingUsername".equals(e.getMessage())){
-                throw new ClientException("AlreadyExistingUsername", "Login already used", e);
-            }
-            else{
-                throw new ServerException("UnknownError", "Unknown server error", e);
-            }
-        }
-
-        System.out.println("RegisterUser: " + registerUser);
-        JsonObjectBuilder reponse = Json.createObjectBuilder().add("status", "ok");
-        return Response.ok().entity(reponse.build()).build();
+        registerUser.setStorage(ValidationUtil.validateLong(storage, "storage"));
+        registerUser.setStatus(INITIAL_STATUS);
+        return registerUser;
     }
 
+    /**
+     * Handles registration exceptions.
+     */
+    private void handleRegistrationException(Exception e) throws ClientException, ServerException {
+        switch (e.getMessage()) {
+            case "AlreadyRegisteringUsername":
+                throw new ClientException("AlreadyRegisteringUsername", "This username is under review", e);
+            case "AlreadyExistingUsername":
+                throw new ClientException("AlreadyExistingUsername", "Login already used", e);
+            default:
+                throw new ServerException("UnknownError", "Unknown server error", e);
+        }
+    }
+
+    /**
+     * Lists all registration requests.
+     */
     @GET
     @Path("/list")
-    public Response list(){
-        RegisterUserDao registerUserDao = new RegisterUserDao();
-        List<RegisterUserDto> registerUserDtoList = registerUserDao.listAll();
+    public Response list() {
+        List<RegisterUserDto> registerUserDtoList = new RegisterUserDao().listAll();
         JsonArrayBuilder registerUsers = Json.createArrayBuilder();
 
-        for(RegisterUserDto registerUserDto : registerUserDtoList){
-
-            JsonObjectBuilder registerUser = Json.createObjectBuilder();
-            registerUser.add("id", registerUserDto.getId())
-                    .add("username", registerUserDto.getUsername())
-                    .add("email", registerUserDto.getEmail())
-                    .add("storage", registerUserDto.getStorage())
-                    .add("submit_time", registerUserDto.getSubmitTime())
-                    .add("status", registerUserDto.getStatus());
-            if(registerUserDto.getOperatedTime() == null){
-                registerUser.add("operated_time", "null");
-            } else {
-                registerUser.add("operated_time", registerUserDto.getOperatedTime());
-            }
-            registerUsers.add(registerUser);
+        for (RegisterUserDto dto : registerUserDtoList) {
+            registerUsers.add(buildRegisterUserJson(dto));
         }
 
-        JsonObjectBuilder response = Json.createObjectBuilder()
-                .add("register_users", registerUsers);
-        return Response.ok().entity(response.build()).build();
+        return Response.ok()
+                .entity(Json.createObjectBuilder()
+                        .add("register_users", registerUsers)
+                        .build())
+                .build();
     }
 
-   @POST
+    /**
+     * Builds JSON representation of a registration request.
+     */
+    private JsonObjectBuilder buildRegisterUserJson(RegisterUserDto dto) {
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("id", dto.getId())
+                .add("username", dto.getUsername())
+                .add("email", dto.getEmail())
+                .add("storage", dto.getStorage())
+                .add("submit_time", dto.getSubmitTime())
+                .add("status", dto.getStatus());
+
+        if (dto.getOperatedTime() == null) {
+            builder.add("operated_time", "null");
+        } else {
+            builder.add("operated_time", dto.getOperatedTime());
+        }
+
+        return builder;
+    }
+
+    /**
+     * Updates the status of a registration request.
+     */
+    @POST
     @Path("/operate")
-   public Response updateStatus(
+    public Response updateStatus(
             @FormParam("id") String id,
-            @FormParam("status") Integer status
-    ){
-        RegisterUserDao registerUserDao = new RegisterUserDao();
+            @FormParam("status") Integer status) {
+        
         JsonObjectBuilder response = Json.createObjectBuilder();
-        Long operated_time;
-        try{
-            operated_time = registerUserDao.updateStatus(id, status);
-            response.add("status", status);
-            response.add("operated_time", operated_time);
-        } catch(Exception e) {
-            if("InvalidStatus".equals(e.getMessage())) {
-                response.add("error", "invalid status");
-                return Response.status(Response.Status.BAD_REQUEST).entity(response.build()).build();
-            }
-            else if("NoSuchUser".equals(e.getMessage())) {
-                response.add("error", "no such user");
-                return Response.status(Response.Status.BAD_REQUEST).entity(response.build()).build();
-            }
-            else if("MultipleUser".equals(e.getMessage())) {
-                response.add("error", "server error");
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response.build()).build();
-            } else if("AlreadyExistingUsername".equals(e.getMessage())) {
-                response.add("error", "server error");
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response.build()).build();
-            }
-
+        
+        try {
+            Long operatedTime = new RegisterUserDao().updateStatus(id, status);
+            response.add("status", status)
+                   .add("operated_time", operatedTime);
+        } catch (Exception e) {
+            return handleStatusUpdateException(e, response);
         }
 
         return Response.ok().entity(response.build()).build();
     }
 
-}
+    /**
+     * Handles status update exceptions.
+     */
+    private Response handleStatusUpdateException(Exception e, JsonObjectBuilder response) {
+        switch (e.getMessage()) {
+            case "InvalidStatus":
+                response.add("error", "invalid status");
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(response.build())
+                        .build();
+            case "NoSuchUser":
+                response.add("error", "no such user");
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(response.build())
+                        .build();
+            case "MultipleUser":
+            case "AlreadyExistingUsername":
+                response.add("error", "server error");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(response.build())
+                        .build();
+            default:
+                response.add("error", "unknown error");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(response.build())
+                        .build();
+        }
+    }
 
+    /**
+     * Builds a success response for registration.
+     */
+    private Response buildSuccessResponse() {
+        return Response.ok()
+                .entity(Json.createObjectBuilder()
+                        .add("status", "ok")
+                        .build())
+                .build();
+    }
+}

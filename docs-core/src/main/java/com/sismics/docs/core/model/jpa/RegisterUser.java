@@ -111,8 +111,4 @@ public class RegisterUser implements Loggable{
         return "Register user [id=" + id + ", username=" + username + "]";
     }
 
-    @Override
-    public Date getDeleteDate() {
-        return operatedTime;
-    }
 }
